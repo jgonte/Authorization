@@ -1,0 +1,6 @@
+/.vs/Authorization.Solution/DesignTimeBuild/*.dtbcache
+/.vs/Authorization.Solution/v15/*.suo
+/.vs/Authorization.Solution/v15/Server/sqlite3
+/.vs/config
+/Authorization/obj
+/Authorization.Tests/obj
