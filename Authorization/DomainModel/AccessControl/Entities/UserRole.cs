@@ -6,9 +6,9 @@ namespace Authorization.AccessControl
 {
     public class UserRoleId
     {
-        public int? UserId { get; set; }
+        public int RoleId { get; set; }
 
-        public int? RolesId { get; set; }
+        public int UserId { get; set; }
 
     }
 

@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace Authorization.AccessControl
 {
-    public class User : Entity<int?>
+    public class User : Entity<int>
     {
         /// <summary>
         /// The user's email
@@ -15,11 +15,6 @@ namespace Authorization.AccessControl
         /// The user's normalized email
         /// </summary>
         public string NormalizedEmail { get; set; }
-
-        /// <summary>
-        /// The user logins of this user
-        /// </summary>
-        public UserLogin UserLogins { get; set; }
 
     }
 }

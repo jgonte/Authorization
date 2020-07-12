@@ -7,14 +7,14 @@ namespace Authorization
     {
         public static async Task<int> Create(string roleName)
         {
-            var roleAggregate = new CreateRoleCommandAggregate(new CreateRoleInputDto
+            var aggregate = new CreateRoleCommandAggregate(new CreateRoleInputDto
             {
                 Name = roleName
             });
 
-            await roleAggregate.SaveAsync();
+            await aggregate.SaveAsync();
 
-            return roleAggregate.RootEntity.Id.Value;
+            return aggregate.RootEntity.Id;
         }
     }
 }

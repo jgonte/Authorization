@@ -8,10 +8,14 @@ namespace Authorization.AccessControl
 {
     public class AddUserLoginsInputDto : IInputDataTransferObject
     {
+        public int UserId { get; set; }
+
         public List<UserLoginInputDto> UserLogins { get; set; } = new List<UserLoginInputDto>();
 
         public virtual void Validate(ValidationResult result)
         {
+            UserId.ValidateRequired(result, nameof(UserId));
+
             var userLoginsCount = (uint)UserLogins.Where(item => item != null).Count();
 
             userLoginsCount.ValidateCountIsEqualOrGreaterThan(result, 1, nameof(UserLogins));

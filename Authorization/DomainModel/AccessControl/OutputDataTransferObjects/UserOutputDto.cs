@@ -12,5 +12,7 @@ namespace Authorization.AccessControl
 
         public IEnumerable<RoleOutputDto> Roles { get; set; }
 
+        public IEnumerable<UserLoginOutputDto> UserLogins { get; set; }
+
     }
 }

@@ -4,3 +4,4 @@
 /.vs/config
 /Authorization/obj
 /Authorization.Tests/obj
+/Authorization/bin/Debug/netcoreapp2.2

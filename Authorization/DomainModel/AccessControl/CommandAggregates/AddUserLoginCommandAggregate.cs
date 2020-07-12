@@ -29,6 +29,7 @@ namespace Authorization.AccessControl
 
             RootEntity = new User
             {
+                Id = user.UserId
             };
 
             foreach (var dto in user.UserLogins)

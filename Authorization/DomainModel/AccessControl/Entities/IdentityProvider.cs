@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace Authorization.AccessControl
 {
-    public class IdentityProvider : Entity<int?>
+    public class IdentityProvider : Entity<int>
     {
         /// <summary>
         /// The name of a provider that can authenticate the identity of a person

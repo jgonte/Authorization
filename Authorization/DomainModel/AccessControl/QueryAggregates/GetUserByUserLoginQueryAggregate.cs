@@ -8,7 +8,9 @@ namespace Authorization.AccessControl
 {
     public class GetUserByUserLoginQueryAggregate : QueryAggregate<User, UserOutputDto>
     {
-        public GetAllLinkedAggregateQueryCollectionOperation<int?, Role, RoleOutputDto> GetAllRolesLinkedAggregateQueryOperation { get; set; }
+        public GetCollectionLinkedValueObjectQueryOperation<User, UserLogin, User_UserLogins_QueryRepository.RepositoryKey> GetUserLoginsOperation { get; private set; }
+
+        public GetAllLinkedAggregateQueryCollectionOperation<int, Role, RoleOutputDto> GetAllRolesLinkedAggregateQueryOperation { get; set; }
 
         public GetUserByUserLoginQueryAggregate() : base(new DomainFramework.DataAccess.RepositoryContext(AuthorizationConnectionClass.GetConnectionName()))
         {
@@ -20,7 +22,20 @@ namespace Authorization.AccessControl
 
             User_UserLogins_QueryRepository.Register(context);
 
-            GetAllRolesLinkedAggregateQueryOperation = new GetAllLinkedAggregateQueryCollectionOperation<int?, Role, RoleOutputDto>
+            GetUserLoginsOperation = new GetCollectionLinkedValueObjectQueryOperation<User, UserLogin, User_UserLogins_QueryRepository.RepositoryKey>
+            {
+                GetLinkedValueObjects = (repository, entity, user) => ((User_UserLogins_QueryRepository)repository).GetAll(RootEntity.Id).ToList(),
+                GetLinkedValueObjectsAsync = async (repository, entity, user) =>
+                {
+                    var items = await ((User_UserLogins_QueryRepository)repository).GetAllAsync(RootEntity.Id);
+
+                    return items.ToList();
+                }
+            };
+
+            QueryOperations.Enqueue(GetUserLoginsOperation);
+
+            GetAllRolesLinkedAggregateQueryOperation = new GetAllLinkedAggregateQueryCollectionOperation<int, Role, RoleOutputDto>
             {
                 GetAllLinkedEntities = (repository, entity, user) => ((RoleQueryRepository)repository).GetAllRolesForUser(RootEntity.Id).ToList(),
                 GetAllLinkedEntitiesAsync = async (repository, entity, user) =>
@@ -83,11 +98,25 @@ namespace Authorization.AccessControl
 
         public override void PopulateDto()
         {
-            OutputDto.UserId = RootEntity.Id.Value;
+            OutputDto.UserId = RootEntity.Id;
 
             OutputDto.Email = RootEntity.Email;
 
+            OutputDto.UserLogins = GetUserLoginsDtos();
+
             OutputDto.Roles = GetAllRolesLinkedAggregateQueryOperation.OutputDtos;
+        }
+
+        public List<UserLoginOutputDto> GetUserLoginsDtos()
+        {
+            return GetUserLoginsOperation
+                .LinkedValueObjects
+                .Select(vo => new UserLoginOutputDto
+                {
+                    Provider = vo.Provider,
+                    UserKey = vo.UserKey
+                })
+                .ToList();
         }
 
     }

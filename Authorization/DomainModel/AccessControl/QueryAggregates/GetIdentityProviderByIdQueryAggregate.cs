@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Authorization.AccessControl
 {
-    public class GetIdentityProviderByIdQueryAggregate : GetByIdQueryAggregate<IdentityProvider, int?, IdentityProviderOutputDto>
+    public class GetIdentityProviderByIdQueryAggregate : GetByIdQueryAggregate<IdentityProvider, int, IdentityProviderOutputDto>
     {
         public GetIdentityProviderByIdQueryAggregate() : this(null)
         {
@@ -21,7 +21,7 @@ namespace Authorization.AccessControl
 
         public override void PopulateDto()
         {
-            OutputDto.IdentityProviderId = RootEntity.Id.Value;
+            OutputDto.IdentityProviderId = RootEntity.Id;
 
             OutputDto.Name = RootEntity.Name;
 

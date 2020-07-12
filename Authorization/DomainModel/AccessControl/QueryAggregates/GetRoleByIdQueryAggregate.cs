@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Authorization.AccessControl
 {
-    public class GetRoleByIdQueryAggregate : GetByIdQueryAggregate<Role, int?, RoleOutputDto>
+    public class GetRoleByIdQueryAggregate : GetByIdQueryAggregate<Role, int, RoleOutputDto>
     {
         public GetRoleByIdQueryAggregate() : this(null)
         {
@@ -21,7 +21,7 @@ namespace Authorization.AccessControl
 
         public override void PopulateDto()
         {
-            OutputDto.RoleId = RootEntity.Id.Value;
+            OutputDto.RoleId = RootEntity.Id;
 
             OutputDto.Name = RootEntity.Name;
         }

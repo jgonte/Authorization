@@ -30,8 +30,8 @@ namespace Authorization.AccessControl
                     if (!dependencies.Any())
                     {
                         cmd.Parameters(
-                            p => p.Name("userId").Value(entity.Id.UserId),
-                            p => p.Name("rolesId").Value(entity.Id.RolesId)
+                            p => p.Name("roleId").Value(entity.Id.RoleId),
+                            p => p.Name("userId").Value(entity.Id.UserId)
                         );
                     }
                     else
@@ -43,8 +43,8 @@ namespace Authorization.AccessControl
                                     var user_ = (User)dependencies.ElementAt(0).Entity;
 
                                     cmd.Parameters(
-                                        p => p.Name("userId").Value(entity.Id.UserId),
-                                        p => p.Name("rolesId").Value(user_.Id)
+                                        p => p.Name("roleId").Value(entity.Id.RoleId),
+                                        p => p.Name("userId").Value(user_.Id)
                                     );
                                 }
                                 break;
@@ -54,8 +54,8 @@ namespace Authorization.AccessControl
                                     var role = (Role)dependencies.ElementAt(0).Entity;
 
                                     cmd.Parameters(
-                                        p => p.Name("userId").Value(role.Id),
-                                        p => p.Name("rolesId").Value(entity.Id.RolesId)
+                                        p => p.Name("roleId").Value(role.Id),
+                                        p => p.Name("userId").Value(entity.Id.UserId)
                                     );
                                 }
                                 break;
@@ -68,13 +68,13 @@ namespace Authorization.AccessControl
 
                                     entity.Id = new UserRoleId
                                     {
-                                        UserId = role.Id.Value,
-                                        RolesId = user_.Id.Value
+                                        RoleId = role.Id,
+                                        UserId = user_.Id
                                     };
 
                                     cmd.Parameters(
-                                        p => p.Name("userId").Value(role.Id),
-                                        p => p.Name("rolesId").Value(user_.Id)
+                                        p => p.Name("roleId").Value(role.Id),
+                                        p => p.Name("userId").Value(user_.Id)
                                     );
                                 }
                                 break;
@@ -107,8 +107,8 @@ namespace Authorization.AccessControl
                 .Connection(AuthorizationConnectionClass.GetConnectionName())
                 .StoredProcedure("[AccessControl].[pUserRole_Update]")
                 .Parameters(
+                    p => p.Name("roleId").Value(entity.Id.RoleId),
                     p => p.Name("userId").Value(entity.Id.UserId),
-                    p => p.Name("rolesId").Value(entity.Id.RolesId),
                     p => p.Name("updatedBy").Value(entity.UpdatedBy)
                 );
         }
@@ -134,8 +134,8 @@ namespace Authorization.AccessControl
                 .Connection(AuthorizationConnectionClass.GetConnectionName())
                 .StoredProcedure("[AccessControl].[pUserRole_Delete]")
                 .Parameters(
-                    p => p.Name("userId").Value(entity.Id.UserId),
-                    p => p.Name("rolesId").Value(entity.Id.RolesId)
+                    p => p.Name("roleId").Value(entity.Id.RoleId),
+                    p => p.Name("userId").Value(entity.Id.UserId)
                 );
         }
 

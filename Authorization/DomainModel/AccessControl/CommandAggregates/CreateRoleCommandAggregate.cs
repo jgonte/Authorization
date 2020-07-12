@@ -11,17 +11,17 @@ namespace Authorization.AccessControl
         {
         }
 
-        public CreateRoleCommandAggregate(RoleInputDto role, EntityDependency[] dependencies = null) : base(new DomainFramework.DataAccess.RepositoryContext(AuthorizationConnectionClass.GetConnectionName()))
+        public CreateRoleCommandAggregate(CreateRoleInputDto role, EntityDependency[] dependencies = null) : base(new DomainFramework.DataAccess.RepositoryContext(AuthorizationConnectionClass.GetConnectionName()))
         {
             Initialize(role, dependencies);
         }
 
         public override void Initialize(IInputDataTransferObject role, EntityDependency[] dependencies)
         {
-            Initialize((RoleInputDto)role, dependencies);
+            Initialize((CreateRoleInputDto)role, dependencies);
         }
 
-        private void Initialize(RoleInputDto role, EntityDependency[] dependencies)
+        private void Initialize(CreateRoleInputDto role, EntityDependency[] dependencies)
         {
             RegisterCommandRepositoryFactory<Role>(() => new RoleCommandRepository());
 

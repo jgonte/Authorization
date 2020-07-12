@@ -77,7 +77,7 @@ namespace Authorization.Tests
             var roleId = await ApplicationRole.Create("admin");
 
             // Associate the user with the role
-            await appUser.GrantRoles(user.UserId, new int[] { roleId });
+            await appUser.GrantRole(user.UserId, roleId);
 
             user = await appUser.GetOrCreate(principal);
 
@@ -125,7 +125,7 @@ namespace Authorization.Tests
             var roleId = await ApplicationRole.Create("admin");
 
             // Associate the user with the role
-            await appUser.GrantRoles(user.UserId, new int[] { roleId });
+            await appUser.GrantRole(user.UserId, roleId);
 
             user = await appUser.GetOrCreate(principal);
 
@@ -195,22 +195,28 @@ namespace Authorization.Tests
 
             int role2Id = await ApplicationRole.Create("role2");
 
-            await appUser.GrantRoles(user.UserId, new int[] { role1Id, role2Id });
+            await appUser.GrantRole(user.UserId, role1Id);
 
-            // Verify the user has the "admin" role replaced by "role1" and "role2"
+            await appUser.GrantRole(user.UserId, role2Id);
+
+            // Verify the user has the "admin" role and also the roles "role1" and "role2"
             user = await appUser.GetOrCreate(principal);
 
             Assert.AreEqual(2, user.UserId);
 
             Assert.AreEqual("user2@mail.com", user.Email);
 
-            Assert.AreEqual(2, user.Roles.Count());
+            Assert.AreEqual(3, user.Roles.Count());
 
-            role = user.Roles.First();
+            role = user.Roles.ElementAt(0);
+
+            Assert.AreEqual("admin", role.Name);
+
+            role = user.Roles.ElementAt(1);
 
             Assert.AreEqual("role1", role.Name);
 
-            role = user.Roles.Last();
+            role = user.Roles.ElementAt(2);
 
             Assert.AreEqual("role2", role.Name);
 

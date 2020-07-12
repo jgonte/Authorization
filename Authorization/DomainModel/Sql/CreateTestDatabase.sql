@@ -60,9 +60,7 @@ CREATE TABLE [AuthorizationTests].[AccessControl].[User]
 (
     [UserId] INT NOT NULL IDENTITY,
     [Email] NVARCHAR(256) NOT NULL,
-    [NormalizedEmail] NVARCHAR(256) NOT NULL,
-    [UserLogins_Provider] VARCHAR(128) NOT NULL,
-    [UserLogins_UserKey] VARCHAR(128) NOT NULL
+    [NormalizedEmail] NVARCHAR(256) NOT NULL
     CONSTRAINT User_PK PRIMARY KEY ([UserId])
 );
 GO
@@ -92,13 +90,13 @@ GO
 
 CREATE TABLE [AuthorizationTests].[AccessControl].[UserRole]
 (
+    [RoleId] INT NOT NULL,
     [UserId] INT NOT NULL,
-    [RolesId] INT NOT NULL,
     [CreatedBy] INT NOT NULL,
     [CreatedDateTime] DATETIME NOT NULL DEFAULT GETDATE(),
     [UpdatedBy] INT,
     [UpdatedDateTime] DATETIME
-    CONSTRAINT UserRole_PK PRIMARY KEY ([UserId], [RolesId])
+    CONSTRAINT UserRole_PK PRIMARY KEY ([RoleId], [UserId])
 );
 GO
 
@@ -277,21 +275,21 @@ END;
 GO
 
 CREATE PROCEDURE [AccessControl].[pRole_AddUsers]
+    @roleId INT,
     @userId INT,
-    @rolesId INT,
     @createdBy INT
 AS
 BEGIN
     INSERT INTO [AuthorizationTests].[AccessControl].[UserRole]
     (
+        [RoleId],
         [UserId],
-        [RolesId],
         [CreatedBy]
     )
     VALUES
     (
+        @roleId,
         @userId,
-        @rolesId,
         @createdBy
     );
 
@@ -299,21 +297,21 @@ END;
 GO
 
 CREATE PROCEDURE [AccessControl].[pRole_LinkUsers]
+    @roleId INT,
     @userId INT,
-    @rolesId INT,
     @createdBy INT
 AS
 BEGIN
     INSERT INTO [AuthorizationTests].[AccessControl].[UserRole]
     (
+        [RoleId],
         [UserId],
-        [RolesId],
         [CreatedBy]
     )
     VALUES
     (
+        @roleId,
         @userId,
-        @rolesId,
         @createdBy
     );
 
@@ -325,7 +323,7 @@ CREATE PROCEDURE [AccessControl].[pRole_UnlinkUsers]
 AS
 BEGIN
     DELETE FROM [AuthorizationTests].[AccessControl].[UserRole]
-    WHERE [UserId] = @roleId;
+    WHERE [RoleId] = @roleId;
 
 END;
 GO
@@ -345,9 +343,7 @@ GO
 
 CREATE PROCEDURE [AccessControl].[pUser_Insert]
     @email NVARCHAR(256),
-    @normalizedEmail NVARCHAR(256),
-    @userLogins_Provider VARCHAR(128),
-    @userLogins_UserKey VARCHAR(128)
+    @normalizedEmail NVARCHAR(256)
 AS
 BEGIN
     DECLARE @userOutputData TABLE
@@ -358,9 +354,7 @@ BEGIN
     INSERT INTO [AuthorizationTests].[AccessControl].[User]
     (
         [Email],
-        [NormalizedEmail],
-        [UserLogins_Provider],
-        [UserLogins_UserKey]
+        [NormalizedEmail]
     )
     OUTPUT
         INSERTED.[UserId]
@@ -368,9 +362,7 @@ BEGIN
     VALUES
     (
         @email,
-        @normalizedEmail,
-        @userLogins_Provider,
-        @userLogins_UserKey
+        @normalizedEmail
     );
 
     SELECT
@@ -381,21 +373,21 @@ END;
 GO
 
 CREATE PROCEDURE [AccessControl].[pUser_AddRoles]
+    @roleId INT,
     @userId INT,
-    @rolesId INT,
     @createdBy INT
 AS
 BEGIN
     INSERT INTO [AuthorizationTests].[AccessControl].[UserRole]
     (
+        [RoleId],
         [UserId],
-        [RolesId],
         [CreatedBy]
     )
     VALUES
     (
+        @roleId,
         @userId,
-        @rolesId,
         @createdBy
     );
 
@@ -403,21 +395,21 @@ END;
 GO
 
 CREATE PROCEDURE [AccessControl].[pUser_LinkRoles]
+    @roleId INT,
     @userId INT,
-    @rolesId INT,
     @createdBy INT
 AS
 BEGIN
     INSERT INTO [AuthorizationTests].[AccessControl].[UserRole]
     (
+        [RoleId],
         [UserId],
-        [RolesId],
         [CreatedBy]
     )
     VALUES
     (
+        @roleId,
         @userId,
-        @rolesId,
         @createdBy
     );
 
@@ -432,7 +424,7 @@ BEGIN
     EXECUTE [dbo].[SetUserContext] @userId;
 
     DELETE FROM [AuthorizationTests].[AccessControl].[UserRole]
-    WHERE [RolesId] = @userId;
+    WHERE [UserId] = @userId;
 
 END;
 GO
@@ -473,36 +465,36 @@ END;
 GO
 
 CREATE PROCEDURE [AccessControl].[pUserRole_Delete]
-    @userId INT,
-    @rolesId INT
+    @roleId INT,
+    @userId INT
 AS
 BEGIN
 
     EXECUTE [dbo].[SetUserContext] @userId;
 
     DELETE FROM [AuthorizationTests].[AccessControl].[UserRole]
-    WHERE [UserId] = @userId
-    AND [RolesId] = @rolesId;
+    WHERE [RoleId] = @roleId
+    AND [UserId] = @userId;
 
 END;
 GO
 
 CREATE PROCEDURE [AccessControl].[pUserRole_Insert]
+    @roleId INT,
     @userId INT,
-    @rolesId INT,
     @createdBy INT
 AS
 BEGIN
     INSERT INTO [AuthorizationTests].[AccessControl].[UserRole]
     (
+        [RoleId],
         [UserId],
-        [RolesId],
         [CreatedBy]
     )
     VALUES
     (
+        @roleId,
         @userId,
-        @rolesId,
         @createdBy
     );
 
@@ -510,8 +502,8 @@ END;
 GO
 
 CREATE PROCEDURE [AccessControl].[pUserRole_Update]
+    @roleId INT,
     @userId INT,
-    @rolesId INT,
     @updatedBy INT = NULL
 AS
 BEGIN
@@ -519,8 +511,8 @@ BEGIN
     SET
         [UpdatedBy] = @updatedBy,
         [UpdatedDateTime] = GETDATE()
-    WHERE [UserId] = @userId
-    AND [RolesId] = @rolesId;
+    WHERE [RoleId] = @roleId
+    AND [UserId] = @userId;
 
 END;
 GO
@@ -617,8 +609,8 @@ BEGIN
         r.[Name] AS "Name"
     FROM [AuthorizationTests].[AccessControl].[Role] r
     INNER JOIN [AuthorizationTests].[AccessControl].[UserRole] u
-        ON r.[RoleId] = u.[UserId]
-    WHERE u.[RolesId] = @userId;
+        ON r.[RoleId] = u.[RoleId]
+    WHERE u.[UserId] = @userId;
 
 END;
 GO
@@ -640,9 +632,7 @@ BEGIN
         @$top = @$top,
         @selectList = N'    u.[UserId] AS "Id",
     u.[Email] AS "Email",
-    u.[NormalizedEmail] AS "NormalizedEmail",
-    u.[UserLogins_Provider] AS "UserLogins.Provider",
-    u.[UserLogins_UserKey] AS "UserLogins.UserKey"',
+    u.[NormalizedEmail] AS "NormalizedEmail"',
         @from = N'[AuthorizationTests].[AccessControl].[User] u',
         @count = @count OUTPUT
 
@@ -656,9 +646,7 @@ BEGIN
     SELECT
         u.[UserId] AS "Id",
         u.[Email] AS "Email",
-        u.[NormalizedEmail] AS "NormalizedEmail",
-        u.[UserLogins_Provider] AS "UserLogins.Provider",
-        u.[UserLogins_UserKey] AS "UserLogins.UserKey"
+        u.[NormalizedEmail] AS "NormalizedEmail"
     FROM [AuthorizationTests].[AccessControl].[User] u
     WHERE u.[NormalizedEmail] = UPPER(@email);
 
@@ -673,9 +661,7 @@ BEGIN
     SELECT
         u.[UserId] AS "Id",
         u.[Email] AS "Email",
-        u.[NormalizedEmail] AS "NormalizedEmail",
-        u.[UserLogins_Provider] AS "UserLogins.Provider",
-        u.[UserLogins_UserKey] AS "UserLogins.UserKey"
+        u.[NormalizedEmail] AS "NormalizedEmail"
     FROM [AuthorizationTests].[AccessControl].[User] u
     INNER JOIN [AuthorizationTests].[AccessControl].[User_UserLogins] ul
         ON u.[UserId] = ul.[UserId]
@@ -692,13 +678,11 @@ BEGIN
     SELECT
         u.[UserId] AS "Id",
         u.[Email] AS "Email",
-        u.[NormalizedEmail] AS "NormalizedEmail",
-        u.[UserLogins_Provider] AS "UserLogins.Provider",
-        u.[UserLogins_UserKey] AS "UserLogins.UserKey"
+        u.[NormalizedEmail] AS "NormalizedEmail"
     FROM [AuthorizationTests].[AccessControl].[User] u
     INNER JOIN [AuthorizationTests].[AccessControl].[UserRole] u1
-        ON u.[UserId] = u1.[RolesId]
-    WHERE u1.[UserId] = @roleId;
+        ON u.[UserId] = u1.[UserId]
+    WHERE u1.[RoleId] = @roleId;
 
 END;
 GO
@@ -715,11 +699,11 @@ AS
 BEGIN
     IF @$filter IS NULL
     BEGIN
-        SET @$filter = N'u1.[UserId] = ' + CAST(@roleId AS NVARCHAR(10));
+        SET @$filter = N'u1.[RoleId] = ' + CAST(@roleId AS NVARCHAR(10));
     END
     ELSE
     BEGIN
-        SET @$filter = N'(' + N'u1.[UserId] = ' + CAST(@roleId AS NVARCHAR(10)) + N') AND (' + @$filter + N')';
+        SET @$filter = N'(' + N'u1.[RoleId] = ' + CAST(@roleId AS NVARCHAR(10)) + N') AND (' + @$filter + N')';
     END;
 
     EXEC [dbo].[pExecuteDynamicQuery]
@@ -730,12 +714,10 @@ BEGIN
         @$top = @$top,
         @selectList = N'    u.[UserId] AS "Id",
     u.[Email] AS "Email",
-    u.[NormalizedEmail] AS "NormalizedEmail",
-    u.[UserLogins_Provider] AS "UserLogins.Provider",
-    u.[UserLogins_UserKey] AS "UserLogins.UserKey"',
+    u.[NormalizedEmail] AS "NormalizedEmail"',
         @from = N'[AuthorizationTests].[AccessControl].[User] u
 INNER JOIN [AuthorizationTests].[AccessControl].[UserRole] u1
-    ON u.[UserId] = u1.[RolesId]',
+    ON u.[UserId] = u1.[UserId]',
         @count = @count OUTPUT
 
 END;

@@ -5,17 +5,13 @@ using Utilities.Validation;
 
 namespace Authorization.AccessControl
 {
-    public class RoleInputDto : IInputDataTransferObject
+    public class CreateRoleInputDto : IInputDataTransferObject
     {
         public string Name { get; set; }
-
-        public UserRoleInputDto UserRole { get; set; }
 
         public virtual void Validate(ValidationResult result)
         {
             Name.ValidateMaxLength(result, nameof(Name), 256);
-
-            UserRole.Validate(result);
         }
 
     }

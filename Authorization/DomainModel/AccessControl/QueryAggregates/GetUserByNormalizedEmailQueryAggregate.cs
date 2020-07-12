@@ -8,13 +8,56 @@ namespace Authorization.AccessControl
 {
     public class GetUserByNormalizedEmailQueryAggregate : QueryAggregate<User, UserOutputDto>
     {
+        public GetCollectionLinkedValueObjectQueryOperation<User, UserLogin, User_UserLogins_QueryRepository.RepositoryKey> GetUserLoginsOperation { get; private set; }
+
+        public GetAllLinkedAggregateQueryCollectionOperation<int, Role, RoleOutputDto> GetAllRolesLinkedAggregateQueryOperation { get; set; }
+
         public GetUserByNormalizedEmailQueryAggregate() : base(new DomainFramework.DataAccess.RepositoryContext(AuthorizationConnectionClass.GetConnectionName()))
         {
             var context = (DomainFramework.DataAccess.RepositoryContext)RepositoryContext;
 
             UserQueryRepository.Register(context);
 
+            RoleQueryRepository.Register(context);
+
             User_UserLogins_QueryRepository.Register(context);
+
+            GetUserLoginsOperation = new GetCollectionLinkedValueObjectQueryOperation<User, UserLogin, User_UserLogins_QueryRepository.RepositoryKey>
+            {
+                GetLinkedValueObjects = (repository, entity, user) => ((User_UserLogins_QueryRepository)repository).GetAll(RootEntity.Id).ToList(),
+                GetLinkedValueObjectsAsync = async (repository, entity, user) =>
+                {
+                    var items = await ((User_UserLogins_QueryRepository)repository).GetAllAsync(RootEntity.Id);
+
+                    return items.ToList();
+                }
+            };
+
+            QueryOperations.Enqueue(GetUserLoginsOperation);
+
+            GetAllRolesLinkedAggregateQueryOperation = new GetAllLinkedAggregateQueryCollectionOperation<int, Role, RoleOutputDto>
+            {
+                GetAllLinkedEntities = (repository, entity, user) => ((RoleQueryRepository)repository).GetAllRolesForUser(RootEntity.Id).ToList(),
+                GetAllLinkedEntitiesAsync = async (repository, entity, user) =>
+                {
+                    var entities = await ((RoleQueryRepository)repository).GetAllRolesForUserAsync(RootEntity.Id);
+
+                    return entities.ToList();
+                },
+                CreateLinkedQueryAggregate = entity =>
+                {
+                    if (entity is Role)
+                    {
+                        return new GetRoleByIdQueryAggregate();
+                    }
+                    else
+                    {
+                        throw new InvalidOperationException();
+                    }
+                }
+            };
+
+            QueryOperations.Enqueue(GetAllRolesLinkedAggregateQueryOperation);
         }
 
         public UserOutputDto Get(string email)
@@ -55,9 +98,25 @@ namespace Authorization.AccessControl
 
         public override void PopulateDto()
         {
-            OutputDto.UserId = RootEntity.Id.Value;
+            OutputDto.UserId = RootEntity.Id;
 
             OutputDto.Email = RootEntity.Email;
+
+            OutputDto.UserLogins = GetUserLoginsDtos();
+
+            OutputDto.Roles = GetAllRolesLinkedAggregateQueryOperation.OutputDtos;
+        }
+
+        public List<UserLoginOutputDto> GetUserLoginsDtos()
+        {
+            return GetUserLoginsOperation
+                .LinkedValueObjects
+                .Select(vo => new UserLoginOutputDto
+                {
+                    Provider = vo.Provider,
+                    UserKey = vo.UserKey
+                })
+                .ToList();
         }
 
     }

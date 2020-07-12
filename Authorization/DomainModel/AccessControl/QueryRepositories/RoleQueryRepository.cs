@@ -8,30 +8,30 @@ using System.Threading.Tasks;
 
 namespace Authorization.AccessControl
 {
-    public class RoleQueryRepository : EntityQueryRepository<Role, int?>
+    public class RoleQueryRepository : EntityQueryRepository<Role, int>
     {
-        public override Role GetById(int? roleId)
+        public override Role GetById(int roleId)
         {
             var result = Query<Role>
                 .Single()
                 .Connection(AuthorizationConnectionClass.GetConnectionName())
                 .StoredProcedure("[AccessControl].[pRole_GetById]")
                 .Parameters(
-                    p => p.Name("roleId").Value(roleId.Value)
+                    p => p.Name("roleId").Value(roleId)
                 )
                 .Execute();
 
             return result.Data;
         }
 
-        public async override Task<Role> GetByIdAsync(int? roleId)
+        public async override Task<Role> GetByIdAsync(int roleId)
         {
             var result = await Query<Role>
                 .Single()
                 .Connection(AuthorizationConnectionClass.GetConnectionName())
                 .StoredProcedure("[AccessControl].[pRole_GetById]")
                 .Parameters(
-                    p => p.Name("roleId").Value(roleId.Value)
+                    p => p.Name("roleId").Value(roleId)
                 )
                 .ExecuteAsync();
 
@@ -45,7 +45,7 @@ namespace Authorization.AccessControl
                 .Connection(AuthorizationConnectionClass.GetConnectionName())
                 .StoredProcedure("[AccessControl].[pUser_GetAllRoles]")
                 .Parameters(
-                    p => p.Name("userId").Value(user.Id)
+                    p => p.Name("userId").Value(userId)
                 )
                 .Execute();
 
@@ -59,7 +59,7 @@ namespace Authorization.AccessControl
                 .Connection(AuthorizationConnectionClass.GetConnectionName())
                 .StoredProcedure("[AccessControl].[pUser_GetAllRoles]")
                 .Parameters(
-                    p => p.Name("userId").Value(user.Id)
+                    p => p.Name("userId").Value(userId)
                 )
                 .ExecuteAsync();
 

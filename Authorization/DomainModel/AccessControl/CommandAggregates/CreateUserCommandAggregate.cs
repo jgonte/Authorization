@@ -25,6 +25,8 @@ namespace Authorization.AccessControl
         {
             RegisterCommandRepositoryFactory<User>(() => new UserCommandRepository());
 
+            RegisterCommandRepositoryFactory<User_UserLogins_CommandRepository.RepositoryKey>(() => new User_UserLogins_CommandRepository());
+
             RootEntity = new User
             {
                 Email = user.Email,
@@ -32,6 +34,17 @@ namespace Authorization.AccessControl
             };
 
             Enqueue(new InsertEntityCommandOperation<User>(RootEntity, dependencies));
+
+            foreach (var dto in user.UserLogins)
+            {
+                var userLoginValueObject = new UserLogin
+                {
+                    Provider = dto.Provider,
+                    UserKey = dto.UserKey
+                };
+
+                Enqueue(new AddLinkedValueObjectCommandOperation<User, UserLogin, User_UserLogins_CommandRepository.RepositoryKey>(RootEntity, userLoginValueObject));
+            }
         }
 
     }

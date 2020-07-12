@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Authorization.AccessControl
 {
-    public class UserQueryRepository : EntityQueryRepository<User, int?>
+    public class UserQueryRepository : EntityQueryRepository<User, int>
     {
         public override (int, IEnumerable<User>) Get(CollectionQueryParameters queryParameters)
         {
@@ -98,35 +98,35 @@ namespace Authorization.AccessControl
             return result.Data;
         }
 
-        public IEnumerable<User> GetAllUsersForRole(int? roleId)
+        public IEnumerable<User> GetAllUsersForRole(int roleId)
         {
             var result = Query<User>
                 .Collection()
                 .Connection(AuthorizationConnectionClass.GetConnectionName())
                 .StoredProcedure("[AccessControl].[pRole_GetAllUsers]")
                 .Parameters(
-                    p => p.Name("roleId").Value(roleId.Value)
+                    p => p.Name("roleId").Value(roleId)
                 )
                 .Execute();
 
             return result.Data;
         }
 
-        public async Task<IEnumerable<User>> GetAllUsersForRoleAsync(int? roleId)
+        public async Task<IEnumerable<User>> GetAllUsersForRoleAsync(int roleId)
         {
             var result = await Query<User>
                 .Collection()
                 .Connection(AuthorizationConnectionClass.GetConnectionName())
                 .StoredProcedure("[AccessControl].[pRole_GetAllUsers]")
                 .Parameters(
-                    p => p.Name("roleId").Value(roleId.Value)
+                    p => p.Name("roleId").Value(roleId)
                 )
                 .ExecuteAsync();
 
             return result.Data;
         }
 
-        public (int, IEnumerable<User>) GetUsersForRole(int? roleId, CollectionQueryParameters queryParameters)
+        public (int, IEnumerable<User>) GetUsersForRole(int roleId, CollectionQueryParameters queryParameters)
         {
             var result = Query<User>
                 .Collection()
@@ -135,7 +135,7 @@ namespace Authorization.AccessControl
                 .QueryParameters(queryParameters)
                 .Parameters(p => p.Name("count").Size(20).Output())
                 .Parameters(
-                    p => p.Name("roleId").Value(roleId.Value)
+                    p => p.Name("roleId").Value(roleId)
                 )
                 .Execute();
 
@@ -144,7 +144,7 @@ namespace Authorization.AccessControl
             return (int.Parse(count), result.Data);
         }
 
-        public async Task<(int, IEnumerable<User>)> GetUsersForRoleAsync(int? roleId, CollectionQueryParameters queryParameters)
+        public async Task<(int, IEnumerable<User>)> GetUsersForRoleAsync(int roleId, CollectionQueryParameters queryParameters)
         {
             var result = await Query<User>
                 .Collection()
@@ -153,7 +153,7 @@ namespace Authorization.AccessControl
                 .QueryParameters(queryParameters)
                 .Parameters(p => p.Name("count").Size(20).Output())
                 .Parameters(
-                    p => p.Name("roleId").Value(roleId.Value)
+                    p => p.Name("roleId").Value(roleId)
                 )
                 .ExecuteAsync();
 

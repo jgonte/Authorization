@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Authorization.AccessControl
 {
-    public class User_UserLogins_QueryRepository : ValueObjectQueryRepository<int?, UserLogin>
+    public class User_UserLogins_QueryRepository : ValueObjectQueryRepository<int, UserLogin>
     {
         public override (int, IEnumerable<UserLogin>) Get(int userId, CollectionQueryParameters queryParameters)
         {
@@ -19,7 +19,7 @@ namespace Authorization.AccessControl
                 .QueryParameters(queryParameters)
                 .Parameters(p => p.Name("count").Size(20).Output())
                 .Parameters(
-                    p => p.Name("userId").Value(user.Id)
+                    p => p.Name("userId").Value(userId)
                 )
                 .Execute();
 
@@ -37,7 +37,7 @@ namespace Authorization.AccessControl
                 .QueryParameters(queryParameters)
                 .Parameters(p => p.Name("count").Size(20).Output())
                 .Parameters(
-                    p => p.Name("userId").Value(user.Id)
+                    p => p.Name("userId").Value(userId)
                 )
                 .ExecuteAsync();
 
@@ -53,7 +53,7 @@ namespace Authorization.AccessControl
                 .Connection(AuthorizationConnectionClass.GetConnectionName())
                 .StoredProcedure("[AccessControl].[pUser_GetAllUserLogins]")
                 .Parameters(
-                    p => p.Name("userId").Value(user.Id)
+                    p => p.Name("userId").Value(userId)
                 )
                 .Execute();
 
@@ -67,7 +67,7 @@ namespace Authorization.AccessControl
                 .Connection(AuthorizationConnectionClass.GetConnectionName())
                 .StoredProcedure("[AccessControl].[pUser_GetAllUserLogins]")
                 .Parameters(
-                    p => p.Name("userId").Value(user.Id)
+                    p => p.Name("userId").Value(userId)
                 )
                 .ExecuteAsync();
 

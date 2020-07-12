@@ -67,28 +67,23 @@ namespace Authorization
             if (user == null)
             {
                 await Create(email, provider, userKey);
+
+                // Reload the user with the updated roles
+                user = await Get(email, provider, userKey);
             }
 
-            return await Get(email, provider, userKey);
+            return user;
         }
 
-        public async Task GrantRoles(int userId, int[] roleIds)
+        public async Task GrantRole(int userId, int roleId)
         {
-            var userRoleAggregate = new ReplaceUserRolesCommandAggregate(new ReplaceUserRolesInputDto
+            var aggregate = new CreateUserRoleCommandAggregate(new CreateUserRoleInputDto
             {
                 UserId = userId,
-                Roles = roleIds.Select(roleId => new RoleInputDto
-                {
-                    UserRole = new UserRoleInputDto
-                    {
-                        UserId = userId,
-                        RolesId = roleId
-                    }
-                })
-                .ToList()
+                RoleId = roleId
             });
 
-            await userRoleAggregate.SaveAsync();
+            await aggregate.SaveAsync();
         }
 
         protected virtual async Task<UserOutputDto> Get(string email, string provider, string userKey)
@@ -108,7 +103,7 @@ namespace Authorization
                     // Add the login to the user
                     var userLogin = new AddUserLoginsInputDto
                     {
-                        Id = user.Id,
+                        UserId = user.UserId,
                         UserLogins = new List<UserLoginInputDto>
                         {
                             new UserLoginInputDto
@@ -122,6 +117,9 @@ namespace Authorization
                     var addUserLoginCommandAggregate = new AddUserLoginCommandAggregate(userLogin);
 
                     await addUserLoginCommandAggregate.SaveAsync();
+
+                    // Reload the user with the added user login
+                    user = await getUserByUserLoginQueryAggregate.GetAsync(provider, userKey);
                 }
             }
 
@@ -130,7 +128,7 @@ namespace Authorization
 
         protected virtual async Task Create(string email, string provider, string userKey)
         {
-            var userAggregate = new CreateUserCommandAggregate(new CreateUserInputDto
+            var aggregate = new CreateUserCommandAggregate(new CreateUserInputDto
             {
                 Email = email,
                 UserLogins = new List<UserLoginInputDto>
@@ -143,9 +141,9 @@ namespace Authorization
                 }
             });
 
-            await userAggregate.SaveAsync();
+            await aggregate.SaveAsync();
 
-            var userId = userAggregate.RootEntity.Id.Value;
+            var userId = aggregate.RootEntity.Id;
         }
 
         private static async Task<ClaimsIdentity> GetClaimsIdentityByAudience(ClaimsPrincipal principal)

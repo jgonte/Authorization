@@ -17,9 +17,7 @@ namespace Authorization.AccessControl
                 .StoredProcedure("[AccessControl].[pUser_Insert]")
                 .Parameters(
                     p => p.Name("email").Value(entity.Email),
-                    p => p.Name("normalizedEmail").Value(entity.NormalizedEmail),
-                    p => p.Name("userLogins_Provider").Value(entity.UserLogins?.Provider),
-                    p => p.Name("userLogins_UserKey").Value(entity.UserLogins?.UserKey)
+                    p => p.Name("normalizedEmail").Value(entity.NormalizedEmail)
                 )
                 .Instance(entity)
                 .MapProperties(
